@@ -51,7 +51,10 @@ module uart_rx #(
                     // wait half a bit period to land in the middle of the start bit
                     if (counter == (DIVISOR/2 - 1)) begin
                         counter <= 0;
-                        state   <= DATA;
+                        if (rx_line == 1'b0)
+                            state <= DATA;      // 真的 start bit，继续
+                        else
+                            state <= IDLE; 
                     end else begin
                         counter <= counter + 1;
                     end
@@ -73,8 +76,10 @@ module uart_rx #(
 
                 STOP: begin
                     if (counter == (DIVISOR - 1)) begin
+                        if (rx_line == 1'b1) begin
                         rx_data <= rx_shift;
                         rx_done <= 1;
+                        end
                         state   <= IDLE;
                     end else begin
                         counter <= counter + 1;
